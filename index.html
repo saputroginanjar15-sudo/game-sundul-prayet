@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎈 Sundul Balon Pintar! 🎈</title>
+    <style>
+        :root {
+            --sky-blue: #87CEEB;
+            --grass-green: #2ecc71;
+            --sun-yellow: #f1c40f;
+            --pop-red: #e74c3c;
+            --text-color: #2c3e50;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Comic Sans MS', 'Chalkboard SE', 'Ubuntu', sans-serif;
+        }
+
+        body {
+            background-color: #fef9e7;
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        #game-container {
+            background-color: white;
+            width: 100%;
+            max-width: 450px;
+            border-radius: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            padding: 25px;
+            text-align: center;
+            border: 5px solid var(--sun-yellow);
+            overflow: hidden;
+        }
+
+        h1 {
+            color: #ff6b6b;
+            font-size: 26px;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px #fdedec;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 15px;
+        }
+
+        /* Tampilan Area Balon Terbang */
+        .sky-arena {
+            background: linear-gradient(to bottom, #aed6f1, #e8f8f5);
+            height: 220px;
+            border-radius: 20px;
+            position: relative;
+            margin-bottom: 20px;
+            border: 3px dashed #bdc3c7;
+            overflow: hidden;
+        }
+
+        .cloud {
+            position: absolute;
+            font-size: 30px;
+            opacity: 0.5;
+        }
+
+        .balloon-element {
+            font-size: 65px;
+            position: absolute;
+            left: calc(50% - 32px);
+            bottom: 90px; /* Default awal 3 meter */
+            transition: bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            filter: drop-shadow(2px 5px 5px rgba(0,0,0,0.15));
+            user-select: none;
+        }
+
+        /* Animasi menyundul */
+        @keyframes sundulAnimation {
+            0% { transform: translateY(0) scale(1); }
+            30% { transform: translateY(-30px) scale(0.9, 1.1); }
+            100% { transform: translateY(0) scale(1); }
+        }
+
+        .sundul {
+            animation: sundulAnimation 0.5s ease;
+        }
+
+        .height-indicator {
+            position: absolute;
+            left: 15px;
+            top: 15px;
+            background: rgba(255,255,255,0.8);
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 14px;
+            color: #2980b9;
+            border: 2px solid #aed6f1;
+        }
+
+        /* Kotak Soal */
+        .question-box {
+            background-color: #f4f6f7;
+            padding: 15px;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            line-height: 1.4;
+            border-bottom: 4px solid #bdc3c7;
+        }
+
+        /* Tombol Pilihan Jawab */
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn-opt {
+            background-color: #fff;
+            color: var(--text-color);
+            border: 3px solid #d5dbdb;
+            padding: 12px 15px;
+            border-radius: 15px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            box-shadow: 0 4px 0 #d5dbdb;
+        }
+
+        .btn-opt:hover:not(:disabled) {
+            background-color: #ebf5fb;
+            border-color: #3498db;
+            box-shadow: 0 4px 0 #3498db;
+            transform: translateY(-2px);
+        }
+
+        .btn-opt:active:not(:disabled) {
+            transform: translateY(2px);
+            box-shadow: 0 0px 0 #3498db;
+        }
+
+        /* Feedback Pesan */
+        #msg-feedback {
+            margin-top: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            min-height: 24px;
+        }
+
+        /* Aturan Layar (Screens) */
+        .layer { display: none; }
+        .layer.active { display: block; }
+
+        /* Tombol Utama */
+        .btn-main {
+            background-color: #ff7675;
+            color: white;
+            border: none;
+            padding: 15px 35px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #b2bec3;
+            transition: all 0.1s;
+            margin-top: 15px;
+        }
+
+        .btn-main:hover {
+            background-color: #ff6b6b;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 #b2bec3;
+        }
+
+        .btn-main:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #b2bec3;
+        }
+
+        .rule-card {
+            background: #fdf2e9;
+            padding: 15px;
+            border-radius: 15px;
+            margin: 15px 0;
+            text-align: left;
+            font-size: 14px;
+            line-height: 1.5;
+            border: 2px dashed #e67e22;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+
+    <!-- LAYAR MULAI -->
+    <div id="screen-start" class="layer active">
+        <h1>🎈 Sundul Balon Pintar!</h1>
+        <p class="subtitle">Bersama Kakak Balon • Edisi Anak SD</p>
+        
+        <div style="font-size: 80px; margin: 10px 0;">🎈🏃‍♂️</div>
+        
+        <div class="rule-card">
+            <p><strong>Halo adik-adik pintar! Yuk bantu Kakak menjaga balon:</strong></p>
+            <p>• Tinggi balon saat ini adalah <strong>3 meter</strong>.</p>
+            <p>• Jawab <strong>Benar</strong> = Balon disundul naik ke atas (+1 meter) 🚀</p>
+            <p>• Jawab <strong>Salah</strong> = Balon turun ke bawah (-1 meter) 📉</p>
+            <p>• Jangan sampai balon menyentuh lantai (0 meter) atau balon akan <strong>MELETUS!💥</strong></p>
+            <p>• Capai tinggi <strong>6 meter</strong> untuk memenangkan Piala Emas! 🏆</p>
+        </div>
+        
+        <button class="btn-main" onclick="mulaiGame()">MULAI MAIN</button>
+    </div>
+
+    <!-- LAYAR PERMAINAN -->
+    <div id="screen-game" class="layer">
+        <h1>🎈 JAGA BALONNYA!</h1>
+        <p class="subtitle">Sundul terus sampai tinggi!</p>
+
+        <div class="sky-arena">
+            <div class="cloud" style="top: 20px; left: 20px;">☁️</div>
+            <div class="cloud" style="top: 60px; right: 30px;">☁️</div>
+            <div class="height-indicator">Tinggi: <span id="txt-tinggi">3</span> Meter</div>
+            <div class="balloon-element" id="item-balon">🎈</div>
+        </div>
+
+        <div class="question-box" id="txt-soal">
+            Memuat soal seru...
+        </div>
+
+        <div class="options-list" id="box-pilihan">
+            <!-- Tombol pilihan akan masuk ke sini -->
+        </div>
+
+        <div id="msg-feedback"></div>
+    </div>
+
+    <!-- LAYAR SELESAI -->
+    <div id="screen-end" class="layer">
+        <h1 id="txt-hasil-judul">Yeyy Menang!</h1>
+        <p class="subtitle">Hasil Akhir Permainanmu</p>
+        
+        <div id="icon-akhir" style="font-size: 80px; margin: 15px 0;">🏆</div>
+        
+        <div class="rule-card" style="text-align: center; background-color: #e8f8f5; border-color: #2ecc71;">
+            <p style="font-size: 18px; font-weight: bold;" id="txt-pesan-akhir"></p>
+        </div>
+
+        <button class="btn-main" onclick="ulangGame()">MAIN LAGI</button>
+    </div>
+
+</div>
+
+<script>
+    // Bank Soal Acak Campuran Anak SD (Matematika, IPA, Umum)
+    const daftarSoal = [
+        { soal: "Berapakah hasil dari 5 dikali 4? (5 x 4)", pil: ["A. 9", "B. 20", "C. 25"], benar: 1 },
+        { soal: "Hewan yang melahirkan anak dan menyusui disebut kelompok hewan...", pil: ["A. Mamalia", "B. Reptil", "C. Unggas"], benar: 0 },
+        { soal: "Warna bendera negara Indonesia tercinta kita adalah...", pil: ["A. Merah, Putih, Hijau", "B. Putih dan Merah", "C. Merah dan Putih"], benar: 2 },
+        { soal: "Jika kamu punya 10 permen, lalu dimakan adik sebanyak 4 permen, sisa permenmu tinggal...", pil: ["A. 6 permen", "B. 5 permen", "C. 7 permen"], benar: 0 },
+        { soal: "Bagian tumbuhan yang tugasnya menyerap air di dalam tanah adalah...", pil: ["A. Daun", "B. Akar", "C. Batang"], benar: 1 },
+        { soal: "Siapakah nama presiden pertama Negara Republik Indonesia?", pil: ["A. Ir. Soekarno", "B. Bapak Jokowi", "C. Bapak Mohammad Hatta"], benar: 0 },
+        { soal: "Alat indra pada tubuh manusia yang kita gunakan untuk mendengar suara adalah...", pil: ["A. Mata", "B. Hidung", "C. Telinga"], benar: 2 }
+    ];
+
+    let tinggiBalon = 3; 
+    let indexSoalSekarang = 0;
+    let soalAcak = [];
+    let sedangAnimasi = false;
+
+    function gantiLayar(idLayar) {
+        document.querySelectorAll('.layer').forEach(l => l.classList.remove('active'));
+        document.getElementById(idLayar).classList.add('active');
+    }
+
+    // Mengacak urutan soal dari bank soal
+    function acakUrutanSoal() {
+        soalAcak = [...daftarSoal].sort(() => Math.random() - 0.5);
+    }
+
+    function mulaiGame() {
+        tinggiBalon = 3;
+        indexSoalSekarang = 0;
+        sedangAnimasi = false;
+        acakUrutanSoal();
+        updateVisualBalon();
+        gantiLayar('screen-game');
+        tampilkanSoal();
+    }
+
+    function updateVisualBalon() {
+        document.getElementById('txt-tinggi').innerText = tinggiBalon;
+        const balon = document.getElementById('item-balon');
+        
+        // Mengubah posisi visual balon di dalam kotak langit (0-6 meter diubah ke koordinat px)
+        // Tinggi 0 meter = bottom 10px (lantai), Tinggi 6 meter = bottom 150px (langit atas)
+        let hitungBottom = 10 + (tinggiBalon * 25);
+        balon.style.bottom = hitungBottom + "px";
+    }
+
+    function tampilkanSoal() {
+        if (indexSoalSekarang >= soalAcak.length) {
+            // Jika soal habis tapi balon belum meletus/mencapai 6, acak ulang soalnya biar terus berjalan
+            acakUrutanSoal();
+            indexSoalSekarang = 0;
+        }
+
+        const dataSoal = soalAcak[indexSoalSekarang];
+        document.getElementById('txt-soal').innerText = dataSoal.soal;
+        document.getElementById('msg-feedback').innerText = "";
+
+        const boxPilihan = document.getElementById('box-pilihan');
+        boxPilihan.innerHTML = "";
+
+        dataSoal.pil.forEach((pilihan, idx) => {
+            const tombol = document.createElement('button');
+            tombol.className = 'btn-opt';
+            tombol.innerText = pilihan;
+            tombol.onclick = () => cekJawabanPemain(idx);
+            boxPilihan.appendChild(tombol);
+        });
+    }
+
+    function cekJawabanPemain(idxDipilih) {
+        if (sedangAnimasi) return;
+        sedangAnimasi = true;
+
+        // Kunci semua tombol agar tidak bisa ditekan berkali-kali
+        document.querySelectorAll('.btn-opt').forEach(b => b.disabled = true);
+
+        const dataSoal = soalAcak[indexSoalSekarang];
+        const balon = document.getElementById('item-balon');
+        const feedback = document.getElementById('msg-feedback');
+        const betulanBenar = (idxDipilih === dataSoal.benar);
+
+        if (betulanBenar) {
+            tinggiBalon++;
+            feedback.innerText = "💥 DUUUG! Sundulan Hebat! Balon naik! 🚀";
+            feedback.style.color = "var(--grass-green)";
+            
+            // Beri efek animasi sundul memantul ke atas
+            balon.classList.add('sundul');
+            setTimeout(() => balon.classList.remove('sundul'), 500);
+        } else {
+            tinggiBalon--;
+            feedback.innerText = "❌ Wuuush.. Meleset! Balonnya turun.. 📉";
+            feedback.style.color = "var(--pop-red)";
+        }
+
+        updateVisualBalon();
+
+        // Cek apakah permainan berakhir (Menang/Kalah)
+        setTimeout(() => {
+            if (tinggiBalon >= 6) {
+                selesaiGame(true);
+            } else if (tinggiBalon <= 0) {
+                selesaiGame(false);
+            } else {
+                indexSoalSekarang++;
+                sedangAnimasi = false;
+                tampilkanSoal();
+            }
+        }, 2000); // Jeda 2 detik agar anak bisa membaca feedback
+    }
+
+    function selesaiGame(apakahMenang) {
+        gantiLayar('screen-end');
+        const judul = document.getElementById('txt-hasil-judul');
+        const icon = document.getElementById('icon-akhir');
+        const pesan = document.getElementById('txt-pesan-akhir');
+
+        if (apakahMenang) {
+            judul.innerText = "🏆 KAMU HEBAT!";
+            judul.style.color = "var(--grass-green)";
+            icon.innerText = "👑🏆🥇";
+            pesan.innerHTML = "Horeee! Balon berhasil terbang tinggi sampai <strong>6 Meter</strong>!<br>Kamu adalah Juara Sundul Balon Pintar!";
+        } else {
+            judul.innerText = "💥 BALON MELETUS! DOOOR!";
+            judul.style.color = "var(--pop-red)";
+            icon.innerText = "🎈💥🥺";
+            pesan.innerHTML = "Aduh, balonnya menyentuh lantai dan meletus!<br>Jangan sedih ya, ayo kita coba latih lagi otak kita!";
+        }
+    }
+
+    function ulangGame() {
+        mulaiGame();
+    }
+</script>
+
+</body>
+</html>
